@@ -18,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.composables.Contadorcafe
 import com.example.myapplication.composables.ListaCompras
+import com.example.myapplication.composables.PantallaDos
+import com.example.myapplication.composables.PantallaUno
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +28,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                ListaCompras()
+                PantallaDos()
             }
         }
     }
