@@ -1,0 +1,33 @@
+package com.example.wallet.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val Primary = Color(0xFF6C63FF)
+val PrimaryVariant = Color(0xFF5A52D5)
+val Secondary = Color(0xFF03DAC6)
+val Background = Color(0xFFF8F9FE)
+val Surface = Color(0xFFFFFFFF)
+val Error = Color(0xFFCF6679)
+val OnPrimary = Color(0xFFFFFFFF)
+val OnBackground = Color(0xFF1A1A2E)
+val OnSurface = Color(0xFF1A1A2E)
+val TextSecondary = Color(0xFF6B7280)
+val CardGradientStart = Color(0xFF6C63FF)
+val CardGradientEnd = Color(0xFF3B82F6)
+val Success = Color(0xFF10B981)
+val Warning = Color(0xFFF59E0B)
+
+val PrimaryDark = Color(0xFF8B85FF)
+val PrimaryVariantDark = Color(0xFF6C63FF)
+val SecondaryDark = Color(0xFF03DAC6)
+val BackgroundDark = Color(0xFF121212)
+val SurfaceDark = Color(0xFF1E1E1E)
+val ErrorDark = Color(0xFFCF6679)
+val OnPrimaryDark = Color(0xFF000000)
+val OnBackgroundDark = Color(0xFFE5E5E5)
+val OnSurfaceDark = Color(0xFFE5E5E5)
+val TextSecondaryDark = Color(0xFF9CA3AF)
+val CardGradientStartDark = Color(0xFF8B85FF)
+val CardGradientEndDark = Color(0xFF60A5FA)
+val SuccessDark = Color(0xFF34D399)
+val WarningDark = Color(0xFFFBBF24)
