@@ -9,7 +9,15 @@ fun AppNavigation() {
 
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "splash") {
+
+        composable("splash") {
+            SplashScreen {
+                navController.navigate("login") {
+                    popUpTo("splash") { inclusive = true }
+                }
+            }
+        }
 
         composable("login") {
             LoginScreen {
