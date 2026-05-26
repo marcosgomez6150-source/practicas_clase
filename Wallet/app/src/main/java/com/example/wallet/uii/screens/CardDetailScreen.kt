@@ -202,7 +202,10 @@ fun CardDetailScreen(cardId: Int, navController: NavController) {
                         description = if (card.isBlocked) "Habilitar operaciones" else "Deshabilitar operaciones",
                         color = if (card.isBlocked) Color(0xFF10B981) else Color(0xFFF59E0B)
                     ) {
-                        card.isBlocked = !card.isBlocked
+                        val index = CardStore.cards.indexOf(card)
+                        if (index >= 0) {
+                            CardStore.cards[index] = card.copy(isBlocked = !card.isBlocked)
+                        }
                     }
                 }
             }

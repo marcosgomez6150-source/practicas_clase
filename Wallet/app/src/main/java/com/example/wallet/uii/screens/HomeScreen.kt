@@ -1,6 +1,7 @@
 package com.example.wallet.uii.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,8 @@ import androidx.navigation.NavController
 import com.example.wallet.uii.components.*
 import com.example.wallet.viewmodel.WalletViewModel
 import com.example.wallet.ui.theme.Primary
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,22 +30,27 @@ fun HomeScreen(navController: NavController) {
 
     val vm = remember { WalletViewModel() }
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showOptions by remember { mutableStateOf(false) }
+    var showAddCardDialog by remember { mutableStateOf(false) }
+    var showDepositDialog by remember { mutableStateOf(false) }
     var bank by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
     var expiryDate by remember { mutableStateOf("") }
+    var initialBalance by remember { mutableStateOf("") }
+    var depositAmount by remember { mutableStateOf("") }
+    var selectedCardId by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showDialog = true },
+                onClick = { showOptions = true },
                 containerColor = Primary,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.size(60.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar tarjeta",
+                    contentDescription = "Opciones",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )
@@ -148,18 +156,83 @@ fun HomeScreen(navController: NavController) {
             }
         }
 
-        if (showDialog) {
+        if (showOptions) {
             AlertDialog(
-                onDismissRequest = { showDialog = false },
+                onDismissRequest = { showOptions = false },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showOptions = false }) {
+                        Text("Cancelar")
+                    }
+                },
+                title = {
+                    Text(
+                        "Opciones",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    showOptions = false
+                                    showAddCardDialog = true
+                                }
+                                .background(Color(0xFF6C63FF).copy(alpha = 0.1f))
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.AddCard, contentDescription = null, tint = Color(0xFF6C63FF))
+                            Column {
+                                Text("Agregar tarjeta", fontWeight = FontWeight.Medium)
+                                Text("Registrar una nueva tarjeta", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6B7280))
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    showOptions = false
+                                    showDepositDialog = true
+                                }
+                                .background(Color(0xFF10B981).copy(alpha = 0.1f))
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color(0xFF10B981))
+                            Column {
+                                Text("Depositar", fontWeight = FontWeight.Medium)
+                                Text("Agregar saldo a una tarjeta", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6B7280))
+                            }
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = Color.White
+            )
+        }
+
+        if (showAddCardDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddCardDialog = false },
                 confirmButton = {
                     Button(
                         onClick = {
+                            val balance = initialBalance.toDoubleOrNull() ?: 0.0
                             if (bank.isNotBlank() && cardNumber.isNotBlank() && expiryDate.isNotBlank()) {
-                                vm.addCard(bank, cardNumber, expiryDate)
+                                vm.addCard(bank, cardNumber, expiryDate, balance)
                                 bank = ""
                                 cardNumber = ""
                                 expiryDate = ""
-                                showDialog = false
+                                initialBalance = ""
+                                showAddCardDialog = false
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
@@ -173,7 +246,8 @@ fun HomeScreen(navController: NavController) {
                         bank = ""
                         cardNumber = ""
                         expiryDate = ""
-                        showDialog = false
+                        initialBalance = ""
+                        showAddCardDialog = false
                     }) {
                         Text("Cancelar")
                     }
@@ -245,6 +319,126 @@ fun HomeScreen(navController: NavController) {
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true
                         )
+                        OutlinedTextField(
+                            value = initialBalance,
+                            onValueChange = { initialBalance = it.filter { c -> c.isDigit() || c == '.' } },
+                            label = { Text("Saldo inicial") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.AttachMoney,
+                                    contentDescription = null,
+                                    tint = Color(0xFF6B7280)
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                            )
+                        )
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = Color.White
+            )
+        }
+
+        if (showDepositDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDepositDialog = false
+                    selectedCardId = null
+                    depositAmount = ""
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val amount = depositAmount.toDoubleOrNull()
+                            val card = selectedCardId?.let { vm.cards.find { c -> c.id == it } }
+                            if (amount != null && amount > 0 && card != null) {
+                                val idx = com.example.wallet.model.CardStore.cards.indexOf(card)
+                                if (idx >= 0) {
+                                    com.example.wallet.model.CardStore.cards[idx] = card.copy(balance = card.balance + amount)
+                                }
+                                com.example.wallet.model.CardStore.addTransaction(
+                                    card.id,
+                                    com.example.wallet.model.TransactionModel("Depósito", amount, "Hoy")
+                                )
+                                selectedCardId = null
+                                depositAmount = ""
+                                showDepositDialog = false
+                            }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Text("Depositar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDepositDialog = false
+                        selectedCardId = null
+                        depositAmount = ""
+                    }) {
+                        Text("Cancelar")
+                    }
+                },
+                title = {
+                    Text(
+                        "Depositar",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            "Selecciona la tarjeta:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF6B7280)
+                        )
+                        vm.cards.forEach { card ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { selectedCardId = card.id }
+                                    .background(
+                                        if (selectedCardId == card.id) Primary.copy(alpha = 0.1f)
+                                        else Color.Transparent
+                                    )
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = selectedCardId == card.id,
+                                    onClick = { selectedCardId = card.id },
+                                    colors = RadioButtonDefaults.colors(selectedColor = Primary)
+                                )
+                                Column {
+                                    Text(card.bank, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                                    Text("•••• ${card.lastDigits} - Saldo: ${NumberFormat.getCurrencyInstance(Locale.US).format(card.balance)}",
+                                        style = MaterialTheme.typography.bodySmall, color = Color(0xFF6B7280))
+                                }
+                            }
+                        }
+                        if (selectedCardId != null) {
+                            OutlinedTextField(
+                                value = depositAmount,
+                                onValueChange = { depositAmount = it.filter { c -> c.isDigit() || c == '.' } },
+                                label = { Text("Cantidad a depositar") },
+                                leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null, tint = Color(0xFF6B7280)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                                )
+                            )
+                        }
                     }
                 },
                 shape = RoundedCornerShape(24.dp),

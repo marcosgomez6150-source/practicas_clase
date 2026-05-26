@@ -8,7 +8,7 @@ class WalletViewModel {
 
     var cards = CardStore.cards
 
-    fun addCard(bank: String, cardNumber: String, expiryDate: String) {
+    fun addCard(bank: String, cardNumber: String, expiryDate: String, initialBalance: Double = 0.0) {
         val digits = cardNumber.filter { it.isDigit() }
         val last4 = if (digits.length >= 4) digits.takeLast(4) else digits
         val newCard = CardModel(
@@ -17,7 +17,7 @@ class WalletViewModel {
             lastDigits = last4,
             cardNumber = cardNumber,
             expiryDate = expiryDate,
-            balance = 0.0,
+            balance = initialBalance,
             color = listOf(
                 androidx.compose.ui.graphics.Color(0xFF1565C0),
                 androidx.compose.ui.graphics.Color(0xFFD32F2F),
